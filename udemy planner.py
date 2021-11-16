@@ -15,9 +15,11 @@ def getVideoLength(video_path):
     return float(frames / fps)
 
 content = []
+duration = 0
 
 def searchFolder(path):
     global content
+    global duration
     os.chdir(path)
     count = 0
     sec = 0
@@ -31,6 +33,7 @@ def searchFolder(path):
             hours = int(dir_info[0]/3600)
             minutes = int((dir_info[0]/60)%60)
             content.append(f'{dir}\nNumber of Videos - {dir_info[1]}\nTime required to complete the module - {hours} hour {minutes} minutes\n\n')
+            duration += dir_info[0]
 
             os.chdir(Path(os.getcwd()).parent)
             
@@ -47,5 +50,7 @@ content.sort()
 content = '\n'.join(content)
 
 plan = open(os.path.join(temp, "course plan.txt"), 'a')
+plan.truncate(0)
+plan.write(f"Time required to complete the entire course = {int(duration/3600)} hours and {int((duration/60)%60)} minutes.\n\n")
 plan.write(content)
 plan.close()
