@@ -1,3 +1,6 @@
 /venv/
+.env
 *.txt
 temp.py
+__pycache__
+.vscode
