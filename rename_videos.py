@@ -1,6 +1,6 @@
 # const hiddenElement = document.createElement('a')
 
-# hiddenElement.href = 'data:attachment/json,' + encodeURI(JSON.stringify(Array.from(document.querySelectorAll("#video-title")).map(el= > el.innerText)))
+# hiddenElement.href = 'data:attachment/json,' + encodeURI(JSON.stringify(Array.from(document.querySelectorAll("#video-title")).map(el => el.innerText)))
 # hiddenElement.download = 'video_names.json'
 # hiddenElement.click()
 
@@ -12,9 +12,14 @@ import os
 ordered_names = []
 
 # custom function
-# for ordered_name in ordered_names:
-#     ordered_names[ordered_names.index(
-#         ordered_name)] = ordered_name.replace("|", " ")
+for ordered_name in ordered_names:
+    index = ordered_names.index(ordered_name)
+    ordered_names[index] = ordered_name.replace("|", " ").replace(
+        ":", "").replace("/", " ").replace("?", "")
+
+
+# print(ordered_names)
+# quit()
 
 
 path = input('Enter absolute path to your videos folder - ')
@@ -24,5 +29,10 @@ os.chdir(path=path)
 
 for video_name in os.listdir():
     # print(ordered_names.index(video_name.replace(".mp4", ""))) # to check
-    index = ordered_names.index(video_name.replace(".mp4", ""))
-    os.rename(video_name, f"{index}. {video_name}")
+    try:
+        index = ordered_names.index(
+            video_name.replace(".mp4", "").replace("    ", "   "))
+        os.rename(video_name, f"{index}. {video_name}")
+    except:
+        if not video_name[:1].isnumeric():
+            print(f'{video_name} not found in list (may be an unnecessary download)')

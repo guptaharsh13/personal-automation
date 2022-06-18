@@ -1,62 +1,57 @@
 import os
 from pathlib import Path
-import cv2
-import mimetypes
+from utils import lenVideo, isVideo, convertTime
 
-path = input('Enter absolute path to your udemy course folder - ')
+path = input('Enter the absolute path to your udemy course folder - ')
 path = fr'{path}'.format(path=path)
 
 
-def getVideoLength(video_path):
-
-    video = cv2.VideoCapture(video_path)
-    frames = video.get(cv2.CAP_PROP_FRAME_COUNT)
-    fps = int(video.get(cv2.CAP_PROP_FPS))
-
-    return float(frames / fps)
-
-
-content = []
-duration = 0
+modules = []
+total_time = 0
 
 
 def searchFolder(path):
     global content
-    global duration
+    global total_time
     os.chdir(path)
     count = 0
-    sec = 0
-    for dir in sorted(os.listdir()):
+    seconds = 0
+    for file in os.listdir():
 
-        dir_name = os.path.join(os.getcwd(), dir)
+        absolute_path = os.path.join(os.getcwd(), file)
 
-        if os.path.isdir(dir):
-            dir_info = searchFolder(dir_name)
+        if os.path.isdir(file):
+            seconds, count = searchFolder(absolute_path)
 
-            hours = int(dir_info[0]/3600)
-            minutes = int((dir_info[0]/60) % 60)
-            content.append(
-                f'{dir}\nNumber of Videos - {dir_info[1]}\nTime required to complete the module - {hours} hour {minutes} minutes\n\n')
-            duration += dir_info[0]
+            modules.append({
+                "module_name": file,
+                "number_of_videos": count,
+                "time_required": seconds
+
+            })
+
+            total_time += seconds
 
             os.chdir(Path(os.getcwd()).parent)
 
-        if mimetypes.guess_type(dir_name)[0] and mimetypes.guess_type(dir_name)[0].startswith('video'):
+        if isVideo(absolute_path):
             count += 1
-            sec += getVideoLength(dir_name)
+            seconds += lenVideo(absolute_path)
 
-    return [sec, count]
+    return seconds, count
 
 
-temp = os.getcwd()
 searchFolder(path)
+modules.sort(key=lambda module: int(module.get("module_name").split(".")[0]))
 
-content.sort()
-content = '\n'.join(content)
 
-plan = open(os.path.join(temp, "course plan.txt"), 'a')
-plan.truncate(0)
-plan.write(
-    f"Time required to complete the entire course = {int(duration/3600)} hours and {int((duration/60)%60)} minutes.\n\n")
-plan.write(content)
-plan.close()
+def mapContent(module):
+    return f'{module.get("module_name")}\nNumber of Videos - {module.get("number_of_videos")}\nTime required to complete the module - {convertTime(module.get("time_required"))}\n\n'
+
+
+content = '\n'.join(map(mapContent, modules))
+
+content = f'Time required to complete the entire course = {convertTime(total_time)}.\n\n{content}'
+
+with open(os.path.join(path, "course plan.txt"), "w") as plan:
+    plan.write(content)

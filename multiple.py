@@ -11,7 +11,7 @@ def multiple_organizer(path, want_name):
 
 
 def main():
-    path = input('Enter absolute path to your course folder - ')
+    path = input('Enter the absolute path to your course folder - ')
     path = fr'{path}'.format(path=path)
     want_name = input("Do you want name (y/n) - ")
     want_name = want_name.lower()
