@@ -7,13 +7,24 @@ def organize(path, want_name):
     os.chdir(path)
 
     # dates - contains each file date
+    # also, clean file names initially
     dates = []
     for f_name in os.listdir():
         if os.path.isdir(f_name):
             continue
+
         date = re.findall(r'\d{2}-\w+-\d{4}', f_name)
-        if date:
-            dates.append(date[0])
+        if not date:
+            continue
+        date = date[0]
+        dates.append(date)
+        extension = f_name.split(".")[-1]
+        if extension == f_name:
+            continue
+        name = re.findall(r'\d{2}-\w+-\d{4}_(.+)\.\w+', f_name)
+        name = name[0] if name else ""
+        to_name = f"{name} {date}.{extension}"
+        os.rename(f_name, to_name)
 
     # months - contains files with the same month - for example - all Feb files would be stored in months[1]
     months = []
@@ -65,28 +76,22 @@ def organize(path, want_name):
     for key, value in order.items():
         print(key, value)
 
-    print("\n")
+    for f_name in sorted(os.listdir()):
+        try:
+            date = f_name.split()[1].split(".")[0]
+        except:
+            continue
+        extension = f_name.split(".")[-1]
+        name = f"          {f_name.split()[0]}" if want_name == "y" else ""
 
-    for f_name in os.listdir():
-        date = re.findall(r'\d{2}-\w+-\d{4}', f_name)
-        if date:
-            date = date[0]
-            extension = f_name.split(".")[-1]
+        if type(order[date]) is int:
+            number = str(order[date])
+        else:
+            number = str(order[date][0])
+            order[date].remove(order[date][0])
 
-            name = ""
-            if want_name == "y":
-                name = re.findall(r'\d{2}-\w+-\d{4}_(.+)\.\w+', f_name)
-                if name:
-                    name = f"          {name[0]}"
-
-            if type(order[date]) is int:
-                number = str(order[date])
-            else:
-                number = str(order[date][0])
-                order[date].remove(order[date][0])
-
-            os.rename(
-                f_name, f"{number}          [{date}]{name}.{extension}")
+        os.rename(
+            f_name, f"{number}          [{date}]{name}.{extension}")
 
     os.chdir(temp_path)
 
