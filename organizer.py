@@ -79,6 +79,7 @@ def organize(path, want_name):
     for f_name in sorted(os.listdir()):
         try:
             date = f_name.split()[1].split(".")[0]
+            order[date]
         except:
             continue
         extension = f_name.split(".")[-1]
